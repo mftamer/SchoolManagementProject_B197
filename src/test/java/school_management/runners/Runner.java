@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 },
         features = "./src/test/resources",
         glue = {"school_management/stepdefinitions", "school_management/hooks"},
-        tags = "@api",
+        tags = "@db",
         dryRun = false
 )
 

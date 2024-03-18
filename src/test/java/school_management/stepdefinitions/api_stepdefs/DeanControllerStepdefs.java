@@ -13,6 +13,7 @@ import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static school_management.base_url.BaseUrl.setUp;
 import static school_management.base_url.BaseUrl.spec;
 
@@ -23,9 +24,10 @@ public class DeanControllerStepdefs {
 
     Response response;
 
-    int userId;
+    public static int userId;
 
-    DeanPojo expectedData;
+    public static DeanPojo expectedData;
+    public static ObjectPojo objectPojo;
 
     @Given("User is authorized as {string}")
     public void userIsAuthorizedAs(String role) {
@@ -34,10 +36,10 @@ public class DeanControllerStepdefs {
         switch (role){
             case "admin":
                 setUp("AdminBatch197", "Batch197+");
-            break;
+                break;
             case "dean":
                 setUp("","");
-            break;
+                break;
             case "teacher":
                 setUp("","");
                 break;
@@ -57,7 +59,7 @@ public class DeanControllerStepdefs {
         payload = new DeanPostPojo("1990-09-24", "UK", "FEMALE", "Kate", "Kate_456", "226-662-2261", "882-22-2881", "Middelton", "Kate");
     }
 
-    @When("sends post request and get response")
+    @When("sends POST request and get response")
     public void sendsPostRequestAndGetResponse() {
         response = given(spec).body(payload).post("{first}/{second}");
         response.prettyPrint();
@@ -89,10 +91,10 @@ public class DeanControllerStepdefs {
     public void userGetsIdOfTheDeanWithUsername(String username) {
         spec.pathParams("first", "dean", "second", "getAll");
 
-       response = given(spec).get("{first}/{second}");
+        response = given(spec).get("{first}/{second}");
 
-       List<Integer> idList =  response.jsonPath().getList("findAll{it.username == '"+username+"' }.userId");
-       userId = idList.get(0);
+        List<Integer> idList =  response.jsonPath().getList("findAll{it.username == '"+username+"' }.userId");
+        userId = idList.get(0);
         System.out.println("userId = " + userId);
 
 
@@ -106,11 +108,11 @@ public class DeanControllerStepdefs {
 
     @And("sets the expected data for Get Dean By id")
     public void setsTheExpectedDataForGetDeanById() {
-        ObjectPojo innerJson = new ObjectPojo(userId, "Kate", "Kate", "Middelton", "1990-09-24", "882-22-2881", "UK", "226-662-2261", "FEMALE");
-        expectedData = new DeanPojo(innerJson, "Dean successfully found", "OK");
+        objectPojo = new ObjectPojo(userId, "Kate", "Kate", "Middelton", "1990-09-24", "882-22-2881", "UK", "226-662-2261", "FEMALE");
+        expectedData = new DeanPojo(objectPojo, "Dean successfully found", "OK");
     }
 
-    @When("sends get request and get response")
+    @When("sends GET request and get response")
     public void sendsGetRequestAndGetResponse() {
         response = given(spec).get("{first}/{second}/{third}");
         response.prettyPrint();
@@ -122,6 +124,27 @@ public class DeanControllerStepdefs {
 
         assertEquals(expectedData.getObject().getBirthDay(), actualData.getObject().getBirthDay());
         assertEquals(expectedData.getObject().getUsername(), actualData.getObject().getUsername());
+        assertEquals(expectedData.getObject().getName(), actualData.getObject().getName());
+        assertEquals(expectedData.getObject().getSurname(), actualData.getObject().getSurname());
+        assertEquals(expectedData.getObject().getBirthPlace(), actualData.getObject().getBirthPlace());
+        assertEquals(expectedData.getObject().getGender(), actualData.getObject().getGender());
+        assertEquals(expectedData.getObject().getPhoneNumber(), actualData.getObject().getPhoneNumber());
+        assertEquals(expectedData.getObject().getSsn(), actualData.getObject().getSsn());
+        assertEquals(expectedData.getObject().getUserId(), actualData.getObject().getUserId());
+
+        assertEquals(expectedData.getHttpStatus(), actualData.getHttpStatus());
+        assertEquals(expectedData.getMessage(), actualData.getMessage());
+
+
+    }
+
+    @And("User deletes the created dean")
+    public void userDeletesTheCreatedDean() {
+
+        spec.pathParams("first","dean", "second", "delete", "third", userId);
+        response = given(spec).delete("{first}/{second}/{third}");
+
+        response.then().statusCode(200);
 
 
     }
